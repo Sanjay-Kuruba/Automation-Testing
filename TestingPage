@@ -1,0 +1,186 @@
+package TestingPracticalTask.testCls;
+import org.testng.annotations.Test;
+import org.testng.annotations.BeforeClass;
+import org.testng.AssertJUnit;
+import org.testng.annotations.Test;
+import org.testng.annotations.BeforeClass;
+import org.testng.AssertJUnit;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang3.RandomStringUtils;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.remote.CapabilityType;
+import org.testng.Assert;
+import org.testng.annotations.*;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
+public class TesingWebPage {
+	WebDriver driver;
+	String firstName = RandomStringUtils.random(10, true, false);
+	String lastName = RandomStringUtils.random(10, true, false);
+	String email = RandomStringUtils.random(10, true, false) + "@gmail.com";
+	String pwd = RandomStringUtils.random(12, true, true);
+	By Firstname = By.xpath("//input[@id='FirstName']");
+	By Lastname = By.xpath("//input[@id='LastName']");
+	By Email = By.xpath("//input[@id='Email']");
+	By Password = By.xpath("//input[@id='CreatePassword']");
+	By Createbutton = By.xpath("//input[@value='Create']");
+	By Submitbutton = By.xpath("//input[@value='Submit']");
+	By AccLogo = By.xpath("(//a[@href='/account'])[2]");
+	By accountheaderText = By.xpath("//h1[@class='section-header__title']");
+	By logoutLink = By.xpath("//a[text()='Log out']");
+	By popUpClose = By.xpath("//button[@class='modal__close js-modal-close text-link']");
+	By CreateAccount = By.xpath("//a[text()='Create account']");
+	By customerEmail = By.xpath("//input[@id='CustomerEmail']");
+	By CustPwd = By.xpath("//input[@id='CustomerPassword']");
+	By customerSignIn = By.xpath("//button[contains(text(),'Sign In')]");
+	
+	
+	
+	@BeforeClass
+	public void setDriver() {
+		WebDriverManager.firefoxdriver().setup();
+	}
+	
+	@BeforeMethod
+	public void initiateBrowser() {	
+		driver = new FirefoxDriver();
+		driver.manage().window().maximize();
+		driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);	
+		driver.get("https://petstore.com/");		
+	}
+	
+
+	
+	@Test(priority = 1)
+	public void petStoreRegistration() throws InterruptedException {
+		Thread.sleep(2000);
+		try {
+			WebElement element = driver.findElement(popUpClose);
+			if(element.isDisplayed()) {
+				System.out.println("clicking on close popup");
+				element.click();
+			}	
+		}catch(Exception e) {
+			
+		}
+		driver.findElement(AccLogo).click();
+		Thread.sleep(3000);
+		
+		driver.findElement(CreateAccount).click();	
+		Thread.sleep(5000);
+		driver.findElement(Firstname).sendKeys(firstName);
+		driver.findElement(Lastname).sendKeys(lastName);
+		driver.findElement(Email).sendKeys(email);
+		driver.findElement(Password).sendKeys(pwd);
+		
+		driver.findElement(Createbutton).click();
+		
+		Thread.sleep(5000);
+		WebElement element = driver.findElement(popUpClose);
+		if(element.isDisplayed()) {
+			System.out.println("clicking on close popup");
+			element.click();
+		}
+		System.out.println("clicking on account logo");
+		Thread.sleep(2000);
+		driver.findElement(AccLogo).click();
+		Thread.sleep(4000);
+		WebElement headerElement = driver.findElement(accountheaderText);
+		WebElement logoutElement = driver.findElement(logoutLink);
+		AssertJUnit.assertTrue( headerElement.isDisplayed());
+		AssertJUnit.assertTrue( logoutElement.isDisplayed());
+		Thread.sleep(1000);
+		logoutElement.click();
+		Thread.sleep(1000);		
+	}
+	
+	@Test(dependsOnMethods = { "petStoreRegistration" }, priority = 2)
+	public void registerWithExistingEmail() throws InterruptedException {
+		Thread.sleep(6000);
+		try {
+			WebElement element = driver.findElement(popUpClose);
+			if(element.isDisplayed()) {
+				System.out.println("clicking on close popup");
+				element.click();
+			}	
+		}catch(Exception e) {
+			
+		}
+		driver.findElement(AccLogo).click();
+		Thread.sleep(3000);
+		
+		driver.findElement(CreateAccount).click();
+			
+		Thread.sleep(5000);
+		driver.findElement(Firstname).sendKeys(firstName);
+		driver.findElement(Lastname).sendKeys(lastName);
+		System.out.println(email);
+		driver.findElement(Email).sendKeys(email);
+		driver.findElement(Password).sendKeys(pwd);
+		
+		driver.findElement(Createbutton).click();
+		Thread.sleep(5000);	
+		String validationText="This email address is already associated with an account";
+		By accountCreationErrorLocator = By.xpath("//li[contains(text(),'This email address is already')]");
+		WebElement errorElement = driver.findElement(accountCreationErrorLocator);
+		String actualErrorMessage = errorElement.getText();
+		System.out.println(actualErrorMessage);
+		AssertJUnit.assertTrue(actualErrorMessage.contains(validationText));
+	}
+	
+	@Test(dependsOnMethods = { "petStoreRegistration" }, priority = 3)
+	public void reLogin() throws InterruptedException {
+		Thread.sleep(2000);
+		try {
+			WebElement element = driver.findElement(popUpClose);
+			if(element.isDisplayed()) {
+				System.out.println("clicking on close popup");
+				element.click();
+			}	
+		}catch(Exception e) {
+			
+		}
+		driver.findElement(AccLogo).click();
+		Thread.sleep(3000);
+		driver.findElement(customerEmail).sendKeys(email);
+		driver.findElement(CustPwd).sendKeys(pwd);		
+		driver.findElement(customerSignIn).click();		
+		Thread.sleep(5000);
+		try {
+			WebElement element = driver.findElement(popUpClose);
+			if(element.isDisplayed()) {
+				System.out.println("clicking on close popup");
+				element.click();
+			}	
+		}catch(Exception e) {
+			
+		}
+		WebElement headerElement = driver.findElement(accountheaderText);
+		WebElement logoutElement = driver.findElement(logoutLink);
+		AssertJUnit.assertTrue( headerElement.isDisplayed());
+		AssertJUnit.assertTrue( logoutElement.isDisplayed());
+		Thread.sleep(1000);
+		logoutElement.click();
+		Thread.sleep(1000);		
+	}
+
+	
+	@AfterMethod
+	public void closeBrowser() {
+		driver.quit();	
+	}
+	
+
+}
