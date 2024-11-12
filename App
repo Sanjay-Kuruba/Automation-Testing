@@ -1,0 +1,228 @@
+package TestingPracticalTask.testCls;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang3.RandomStringUtils;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.support.ui.Select;
+import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+
+
+/**
+ * Unit test for simple App.
+ */
+public class AppTest {
+	
+	WebDriver driver;
+	By firstNameLocator = By.xpath("//input[@id='FirstName']");
+	By lastNameLocator = By.xpath("//input[@id='LastName']");
+	By emaillocator = By.xpath("//input[@id='Email']");
+	By pwdLocator = By.xpath("//input[@id='CreatePassword']");
+	By createButtonLocator = By.xpath("//input[@value='Create']");
+	By submitLocator = By.xpath("//input[@value='Submit']");
+	By accountLogoLocator = By.xpath("(//a[@href='/account'])[2]");
+	By accountheaderText = By.xpath("//h1[@class='section-header__title']");
+	By logoutLink = By.xpath("//a[text()='Log out']");
+	By popUpClose = By.xpath("//button[@class='modal__close js-modal-close text-link']");
+	By createAccountLink = By.xpath("//a[text()='Create account']");
+	
+	By menuBar = By.xpath("//div[@class='site-nav']/button");
+	By menuItem1 = By.xpath("//a[contains(text(),'Dog')]");
+	By bestSellingDropDown = By.xpath("//select[@id='SortBy']");
+	By firstItemHighAndLowAndGrid = By.xpath("(//div[contains(@class,'grid--uniform')]//a)[1]");
+	By itemHeaderTextLocator = By.xpath("//h1[@class='h2 product-single__title']");
+	By addToCartBtn = By.xpath("//button[@name='add']");
+	By cartItems = By.xpath("//div[@class='ajaxcart__row']//div[@class='grid__item two-thirds']//a");
+	By dogExpandArrow = By.xpath("//button[@aria-controls='Linklist-collections-dog1']");
+	By menuItem2 = By.xpath("//a[contains(text(),'Cat')]");
+	By cartCloseLocator = By.xpath("(//div[@class='drawer__close']/button)[2]");
+	
+	By searchBar = By.xpath("//a[@href='/search']");
+	By searchOurStore = By.xpath("//input[@placeholder='Search our store']");
+	By searchItemFirstHeaderLoc = By.xpath("(//div[contains(@class,'grid--uniform')]//a)[1]//div[contains(@class,'title--heading')]");
+
+
+
+@BeforeClass
+public void setDriver() {
+	WebDriverManager.firefoxdriver().setup();
+}
+
+@BeforeMethod
+public void initiateBrowser() {
+	driver = new FirefoxDriver();
+	driver.manage().window().maximize();
+	driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);	
+	driver.get("https://petstore.com/");		
+}
+
+
+
+@Test
+public void addProductToCart() throws InterruptedException {
+	List<String> cartItemsName = new ArrayList<String>();
+	Thread.sleep(15000);
+	try {
+		WebElement element = driver.findElement(popUpClose);
+		if(element.isDisplayed()) {
+			System.out.println("clicking on close popup");
+			element.click();
+		}	
+	}catch(Exception e) {
+		
+	}	
+	Thread.sleep(1000);
+	clickElement(menuBar);
+
+	Thread.sleep(1000);
+	clickElement(menuItem1);
+	
+	Thread.sleep(3000);
+	
+	selectValueFromDropBox(bestSellingDropDown, "Price, low to high");
+	
+	Thread.sleep(4000);
+	
+	clickElement(firstItemHighAndLowAndGrid);
+	
+	Thread.sleep(3000);
+	String itemHeaderTextLowPrice = driver.findElement(itemHeaderTextLocator).getText().toLowerCase();
+	System.out.println("Low Price item Header Text = " + itemHeaderTextLowPrice);
+	cartItemsName.add(itemHeaderTextLowPrice);
+	
+	clickElement(addToCartBtn);
+	
+	Thread.sleep(3000);
+	boolean flag = false;
+	for(WebElement element : driver.findElements(cartItems)) {
+		if(element.getText().toLowerCase().equals(itemHeaderTextLowPrice)) {
+			flag = true;
+			break;
+		}
+	}
+	
+	if(flag){
+		System.out.println("Added low price cart item is matching");
+		Assert.assertTrue(flag);
+	}else {
+		Assert.fail("Added low price Cart item is not matching");
+	}
+	
+	clickElement(cartCloseLocator);
+	
+	Thread.sleep(1000);
+	
+	clickElement(menuBar);
+
+	Thread.sleep(1000);
+	
+	WebElement arrowElement = driver.findElement(dogExpandArrow);
+	String expandStatus = arrowElement.getAttribute("aria-expanded");
+	if(expandStatus.equals("true")) {
+		arrowElement.click();
+	}
+	
+	Thread.sleep(2000);
+	
+	clickElement(menuItem2);
+	
+	Thread.sleep(3000);
+	
+	selectValueFromDropBox(bestSellingDropDown, "Price, high to low");
+	
+	Thread.sleep(3000);
+	
+	clickElement(firstItemHighAndLowAndGrid);
+	
+	Thread.sleep(3000);
+	String itemHeaderTextHighPrice = driver.findElement(itemHeaderTextLocator).getText().toLowerCase();
+	System.out.println("High Price item Header Text = " + itemHeaderTextHighPrice);
+	cartItemsName.add(itemHeaderTextHighPrice);
+	clickElement(addToCartBtn);
+	Thread.sleep(3000);
+	flag = false;
+	for(WebElement element : driver.findElements(cartItems)) {
+		if(element.getText().toLowerCase().equals(itemHeaderTextHighPrice)) {
+			flag = true;
+			break;
+		}
+	}
+	
+	if(flag){
+		System.out.println("Added High price cart item is matching");
+		Assert.assertTrue(flag);
+	}else {
+		Assert.fail("Added High price Cart item is not matching");
+	}
+	
+	clickElement(cartCloseLocator);
+	
+	
+	Thread.sleep(1000);
+	
+	clickElement(searchBar);
+	
+	Thread.sleep(1000);
+	enterText(searchOurStore, "Dog");
+	
+	Thread.sleep(3000);
+	clickElement(firstItemHighAndLowAndGrid);
+	
+	Thread.sleep(3000);
+	String itemHeaderTextSearchPrice = driver.findElement(itemHeaderTextLocator).getText().toLowerCase();
+	System.out.println("High Price item Header Text = " + itemHeaderTextSearchPrice);
+	cartItemsName.add(itemHeaderTextSearchPrice);
+	clickElement(addToCartBtn);
+	
+	Thread.sleep(3000);
+	
+	int expectedCount = 3;
+	int actualCount = 0;
+	
+	for(WebElement element : driver.findElements(cartItems)) {
+		if(cartItemsName.contains(element.getText().toLowerCase())) {
+			actualCount++;
+		}
+	}
+	
+	System.out.println("Expected count = " + expectedCount);
+	
+	System.out.println("Actual count = " + actualCount);
+	
+	Assert.assertTrue(expectedCount==actualCount);
+	
+}
+
+public void clickElement(By element) {
+	driver.findElement(element).click();
+}
+
+public void enterText(By element, String value) {
+	driver.findElement(element).sendKeys(value);
+}
+
+public void selectValueFromDropBox(By element, String value) {
+	WebElement dpBox = driver.findElement(element);
+	Select s = new Select(dpBox);
+	s.selectByVisibleText(value);
+}
+
+
+@AfterMethod
+public void closeBrowser() {
+	driver.quit();	
+}
+
+}
+    
